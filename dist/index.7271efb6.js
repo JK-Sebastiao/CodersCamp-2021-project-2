@@ -25077,40 +25077,50 @@ const Results = ()=>{
     const [users, setUsers] = _react.useState([]);
     const [toggled, setToggled] = _react.useState(false);
     const [order, setOrder] = _react.useState("repositories");
-    const [currentPage, setcurrentPage] = _react.useState(1);
-    const [itemsPerPage, setitemsPerPage] = _react.useState(12);
-    const pages = [];
-    for(let i = 1; i <= Math.ceil(users.length / itemsPerPage); i++)pages.push(i);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = users.slice(indexOfFirstItem, indexOfLastItem);
+    const [error1, setError] = _react.useState(false);
+    const [currentPage, setCurrentPage] = _react.useState(1);
+    const [pages1, setPages] = _react.useState([]);
     function handleClick(event) {
-        setcurrentPage(Number(event.target.id));
+        setCurrentPage(Number(event.target.id));
+        window.scrollTo(0, 0);
     }
     const [searchParams, setSearchParams] = _reactRouterDom.useSearchParams({
     });
-    let location = "Poland";
-    let language = "any language";
-    if (searchParams.get("location") != "") location = searchParams.get("location");
-    let URL = `https://api.github.com/search/users?q=location:${location}`;
-    if (searchParams.get("language") != "") {
-        language = searchParams.get("language");
-        URL = URL + ` language:${language}`;
-    }
     _react.useEffect(()=>{
-        const fetchData = async ()=>{
-            const data = await fetch(URL + `&sort=${order}`);
-            const json = await data.json();
-            const items = json.items;
-            setUsers(items);
-        };
-        fetchData().catch(console.error);
+        const languageParam = searchParams.get("language") != "" ? `language:${searchParams.get("language")}` : '';
+        const locationParam = searchParams.get("location") != "" ? `location:${searchParams.get("location")}` : 'location:Poland';
+        fetch(`https://api.github.com/search/users?per_page=20&page=${currentPage}&q=${locationParam} ${languageParam}&sort=${order}`, {
+            method: 'GET',
+            redirect: 'follow'
+        }).then((response)=>{
+            if (!response.ok) throw new Error("Too many calls.");
+            return response.json();
+        }).then((result)=>{
+            setError(false);
+            setUsers(result.items);
+            setPages(result.total_count >= 100 ? [
+                1,
+                2,
+                3,
+                4,
+                5
+            ] : pagesFromCount(Math.floor((result.total_count - 1) / 20) + 1));
+        }).catch((error)=>{
+            console.error(error);
+            setError(true);
+        });
     }, [
-        order
+        order,
+        currentPage
     ]);
     const handleOrder = ()=>{
         if (order === "repositories") setOrder("followers");
         else if (order === "followers") setOrder("repositories");
+    };
+    const pagesFromCount = (count)=>{
+        let pages = [];
+        for(let i = 0; i < count; i++)pages[i] = i + 1;
+        return pages;
     };
     return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_jsxDevRuntime.Fragment, {
         children: /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
@@ -25122,156 +25132,177 @@ const Results = ()=>{
                         className: "logo"
                     }, void 0, false, {
                         fileName: "src/components/ResultsPage/Results.js",
-                        lineNumber: 66,
+                        lineNumber: 69,
                         columnNumber: 6
                     }, undefined)
                 }, void 0, false, {
-                    fileName: "src/components/ResultsPage/Results.js",
-                    lineNumber: 65,
-                    columnNumber: 5
-                }, undefined),
-                /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                    className: "details-container",
-                    children: [
-                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                            className: "details"
-                        }, void 0, false, {
-                            fileName: "src/components/ResultsPage/Results.js",
-                            lineNumber: 69,
-                            columnNumber: 6
-                        }, undefined),
-                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                            className: "details-city-language",
-                            children: [
-                                location,
-                                ", ",
-                                language
-                            ]
-                        }, void 0, true, {
-                            fileName: "src/components/ResultsPage/Results.js",
-                            lineNumber: 70,
-                            columnNumber: 6
-                        }, undefined)
-                    ]
-                }, void 0, true, {
                     fileName: "src/components/ResultsPage/Results.js",
                     lineNumber: 68,
                     columnNumber: 5
                 }, undefined),
-                /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                    children: /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                        className: "switch-container",
-                        children: [
-                            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                                children: "Order by: Repositories"
-                            }, void 0, false, {
-                                fileName: "src/components/ResultsPage/Results.js",
-                                lineNumber: 76,
-                                columnNumber: 7
-                            }, undefined),
-                            /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_toggleDefault.default, {
-                                onChange: (event)=>setToggled(event.target.checked)
-                                ,
-                                onChange: handleOrder
-                            }, void 0, false, {
-                                fileName: "src/components/ResultsPage/Results.js",
-                                lineNumber: 77,
-                                columnNumber: 7
-                            }, undefined),
-                            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                                children: "Followers"
-                            }, void 0, false, {
-                                fileName: "src/components/ResultsPage/Results.js",
-                                lineNumber: 81,
-                                columnNumber: 7
-                            }, undefined)
-                        ]
-                    }, void 0, true, {
-                        fileName: "src/components/ResultsPage/Results.js",
-                        lineNumber: 75,
-                        columnNumber: 6
-                    }, undefined)
-                }, void 0, false, {
-                    fileName: "src/components/ResultsPage/Results.js",
-                    lineNumber: 74,
-                    columnNumber: 5
-                }, undefined),
-                /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                    className: "users-container",
-                    children: currentItems.map((user)=>{
-                        return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactRouterDom.Link, {
-                            to: `/user/${user.login}`,
-                            className: "link-style",
+                error1 ? /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_jsxDevRuntime.Fragment, {
+                    children: [
+                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("h1", {
+                            children: "Error"
+                        }, void 0, false, {
+                            fileName: "src/components/ResultsPage/Results.js",
+                            lineNumber: 73,
+                            columnNumber: 6
+                        }, undefined),
+                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("h2", {
+                            children: "Too many API calls. Try again in a while."
+                        }, void 0, false, {
+                            fileName: "src/components/ResultsPage/Results.js",
+                            lineNumber: 74,
+                            columnNumber: 6
+                        }, undefined)
+                    ]
+                }, void 0, true) : /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_jsxDevRuntime.Fragment, {
+                    children: [
+                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                            className: "details-container",
+                            children: [
+                                /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                                    className: "details"
+                                }, void 0, false, {
+                                    fileName: "src/components/ResultsPage/Results.js",
+                                    lineNumber: 78,
+                                    columnNumber: 7
+                                }, undefined),
+                                /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                                    className: "details-city-language",
+                                    children: [
+                                        searchParams.get("location") != "" ? searchParams.get("location") : "Poland",
+                                        ", ",
+                                        searchParams.get("language") != "" ? searchParams.get("language") : "any language"
+                                    ]
+                                }, void 0, true, {
+                                    fileName: "src/components/ResultsPage/Results.js",
+                                    lineNumber: 79,
+                                    columnNumber: 7
+                                }, undefined)
+                            ]
+                        }, void 0, true, {
+                            fileName: "src/components/ResultsPage/Results.js",
+                            lineNumber: 77,
+                            columnNumber: 6
+                        }, undefined),
+                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
                             children: /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                                className: "user-container",
+                                className: "switch-container",
                                 children: [
-                                    /*#__PURE__*/ _jsxDevRuntime.jsxDEV("img", {
-                                        className: "user-img",
-                                        src: user.avatar_url,
-                                        alt: user.login
-                                    }, user.login, false, {
-                                        fileName: "src/components/ResultsPage/Results.js",
-                                        lineNumber: 89,
-                                        columnNumber: 10
-                                    }, undefined),
-                                    /*#__PURE__*/ _jsxDevRuntime.jsxDEV("h2", {
-                                        children: user.login
+                                    /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                                        children: "Order by: Repositories"
                                     }, void 0, false, {
                                         fileName: "src/components/ResultsPage/Results.js",
-                                        lineNumber: 95,
-                                        columnNumber: 10
+                                        lineNumber: 85,
+                                        columnNumber: 8
+                                    }, undefined),
+                                    /*#__PURE__*/ _jsxDevRuntime.jsxDEV(_toggleDefault.default, {
+                                        onChange: (event)=>setToggled(event.target.checked)
+                                        ,
+                                        onChange: handleOrder
+                                    }, void 0, false, {
+                                        fileName: "src/components/ResultsPage/Results.js",
+                                        lineNumber: 86,
+                                        columnNumber: 8
+                                    }, undefined),
+                                    /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                                        children: "Followers"
+                                    }, void 0, false, {
+                                        fileName: "src/components/ResultsPage/Results.js",
+                                        lineNumber: 90,
+                                        columnNumber: 8
                                     }, undefined)
                                 ]
                             }, void 0, true, {
                                 fileName: "src/components/ResultsPage/Results.js",
-                                lineNumber: 88,
-                                columnNumber: 9
+                                lineNumber: 84,
+                                columnNumber: 7
                             }, undefined)
                         }, void 0, false, {
                             fileName: "src/components/ResultsPage/Results.js",
-                            lineNumber: 87,
-                            columnNumber: 8
-                        }, undefined));
-                    })
-                }, void 0, false, {
-                    fileName: "src/components/ResultsPage/Results.js",
-                    lineNumber: 84,
-                    columnNumber: 5
-                }, undefined),
-                /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
-                    className: "pageNumbers",
-                    children: /*#__PURE__*/ _jsxDevRuntime.jsxDEV("ul", {
-                        children: pages.map((number)=>{
-                            return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV("li", {
-                                id: number,
-                                onClick: handleClick,
-                                className: currentPage == number ? "active" : null,
-                                children: number
-                            }, number, false, {
+                            lineNumber: 83,
+                            columnNumber: 6
+                        }, undefined),
+                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                            className: "users-container",
+                            children: users.map((user)=>{
+                                return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV(_reactRouterDom.Link, {
+                                    to: `/user/${user.login}`,
+                                    className: "link-style",
+                                    children: /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                                        className: "user-container",
+                                        children: [
+                                            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("img", {
+                                                className: "user-img",
+                                                src: user.avatar_url,
+                                                alt: user.login
+                                            }, void 0, false, {
+                                                fileName: "src/components/ResultsPage/Results.js",
+                                                lineNumber: 98,
+                                                columnNumber: 11
+                                            }, undefined),
+                                            /*#__PURE__*/ _jsxDevRuntime.jsxDEV("h2", {
+                                                children: user.login
+                                            }, void 0, false, {
+                                                fileName: "src/components/ResultsPage/Results.js",
+                                                lineNumber: 103,
+                                                columnNumber: 11
+                                            }, undefined)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "src/components/ResultsPage/Results.js",
+                                        lineNumber: 97,
+                                        columnNumber: 10
+                                    }, undefined)
+                                }, user.login, false, {
+                                    fileName: "src/components/ResultsPage/Results.js",
+                                    lineNumber: 96,
+                                    columnNumber: 9
+                                }, undefined));
+                            })
+                        }, void 0, false, {
+                            fileName: "src/components/ResultsPage/Results.js",
+                            lineNumber: 93,
+                            columnNumber: 6
+                        }, undefined),
+                        /*#__PURE__*/ _jsxDevRuntime.jsxDEV("div", {
+                            className: "pageNumbers",
+                            children: /*#__PURE__*/ _jsxDevRuntime.jsxDEV("ul", {
+                                children: pages1.map((number)=>{
+                                    return(/*#__PURE__*/ _jsxDevRuntime.jsxDEV("li", {
+                                        id: number,
+                                        onClick: handleClick,
+                                        className: currentPage == number ? "active" : null,
+                                        children: number
+                                    }, number, false, {
+                                        fileName: "src/components/ResultsPage/Results.js",
+                                        lineNumber: 113,
+                                        columnNumber: 10
+                                    }, undefined));
+                                })
+                            }, void 0, false, {
                                 fileName: "src/components/ResultsPage/Results.js",
-                                lineNumber: 105,
-                                columnNumber: 9
-                            }, undefined));
-                        })
-                    }, void 0, false, {
-                        fileName: "src/components/ResultsPage/Results.js",
-                        lineNumber: 102,
-                        columnNumber: 6
-                    }, undefined)
-                }, void 0, false, {
-                    fileName: "src/components/ResultsPage/Results.js",
-                    lineNumber: 101,
-                    columnNumber: 5
-                }, undefined)
+                                lineNumber: 110,
+                                columnNumber: 7
+                            }, undefined)
+                        }, void 0, false, {
+                            fileName: "src/components/ResultsPage/Results.js",
+                            lineNumber: 109,
+                            columnNumber: 6
+                        }, undefined)
+                    ]
+                }, void 0, true)
             ]
         }, void 0, true, {
             fileName: "src/components/ResultsPage/Results.js",
-            lineNumber: 64,
+            lineNumber: 67,
             columnNumber: 4
         }, undefined)
     }, void 0, false));
 };
-_s(Results, "//lrr/43fRsgPKt3FR0bTJgvZIc=", false, function() {
+_s(Results, "LdGj1n/383+cole8hqKdwQ9q8vE=", false, function() {
     return [
         _reactRouterDom.useSearchParams
     ];
